@@ -14,7 +14,7 @@ import android.widget.TextView;
 import android.graphics.Color;
 import android.graphics.Typeface;
 
-import androidx.appcompat.app.AppCompatActivity;
+import android.app.Activity;
 
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
@@ -28,7 +28,7 @@ import com.facebook.login.LoginResult;
 import org.json.JSONObject;
 import java.util.Arrays;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
     private CallbackManager callbackManager;
     private EditText urlInput;
     private TextView status, accountInfo;
