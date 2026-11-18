@@ -1,7 +1,3 @@
 <resources>
     <string name="app_name">My Video Downloader</string>
-    <!-- Set these values from your own Meta Developer app before using Facebook Login. -->
-    <string name="facebook_app_id">0</string>
-    <string name="facebook_client_token">REPLACE_WITH_META_CLIENT_TOKEN</string>
-    <string name="fb_login_protocol_scheme">fb0</string>
 </resources>
