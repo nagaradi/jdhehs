@@ -15,258 +15,208 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.Locale;
 
 public class MainActivity extends Activity {
-    private EditText urlInput;
-    private EditText profileInput;
+    private EditText urlInput, profileInput;
     private TextView status;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    @Override public void onCreate(Bundle state) {
+        super.onCreate(state);
         buildScreen();
         handleIncoming(getIntent());
     }
 
-    @Override
-    protected void onNewIntent(Intent intent) {
+    @Override protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
         handleIncoming(intent);
     }
 
     private void buildScreen() {
+        ScrollView scroll = new ScrollView(this);
         LinearLayout page = new LinearLayout(this);
         page.setOrientation(LinearLayout.VERTICAL);
-        page.setPadding(dp(20), dp(24), dp(20), dp(24));
-        page.setBackgroundColor(Color.rgb(246, 248, 252));
+        page.setPadding(dp(20), dp(22), dp(20), dp(28));
+        page.setBackgroundColor(Color.rgb(246,248,252));
+        scroll.addView(page);
 
         TextView title = new TextView(this);
         title.setText("Video Downloader");
-        title.setTextSize(25);
+        title.setTextSize(26);
         title.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-        title.setTextColor(Color.rgb(20, 45, 80));
-        add(page, title, 0);
+        title.setTextColor(Color.rgb(20,45,80));
+        add(page,title,0);
 
         TextView subtitle = new TextView(this);
-        subtitle.setText("Facebook खोलें • Reel share करें • उपलब्ध वीडियो फ़ाइल सेव करें");
+        subtitle.setText("Facebook खोलें • Reel शेयर करें • अनुमति वाले वीडियो सेव करें");
         subtitle.setTextSize(14);
-        subtitle.setTextColor(Color.rgb(80, 90, 105));
-        add(page, subtitle, 8);
+        subtitle.setTextColor(Color.rgb(75,85,100));
+        add(page,subtitle,8);
 
-        TextView profileLabel = new TextView(this);
-        profileLabel.setText("Facebook profile link");
-        profileLabel.setTextSize(16);
-        profileLabel.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-        profileLabel.setTextColor(Color.rgb(35, 55, 80));
-        add(page, profileLabel, 22);
-
+        section(page,"Facebook प्रोफाइल");
         profileInput = new EditText(this);
         profileInput.setSingleLine(true);
         profileInput.setTextSize(14);
         profileInput.setHint("https://www.facebook.com/username");
-        profileInput.setPadding(dp(12), dp(10), dp(12), dp(10));
-        add(page, profileInput, 8);
+        add(page,profileInput,6);
+        button(page,"प्रोफाइल खोलें",v -> openFacebookProfile());
+        button(page,"Facebook Reels खोलें",v -> openUrl("https://www.facebook.com/reel/"));
 
-        Button openProfile = new Button(this);
-        openProfile.setText("Open Facebook profile");
-        openProfile.setOnClickListener(v -> openFacebookProfile());
-        add(page, openProfile, 8);
-
-        Button openReels = new Button(this);
-        openReels.setText("Open Facebook Reels");
-        openReels.setOnClickListener(v -> openFacebookReels());
-        add(page, openReels, 6);
-
-        TextView howTo = new TextView(this);
-        howTo.setText("Facebook में Reel खोलें और Share → इस ऐप को चुनें। लिंक अपने आप यहाँ आएगा। अगर Facebook केवल Reel का पेज लिंक देता है, तो उससे सीधे वीडियो फ़ाइल डाउनलोड नहीं होगी।");
-        howTo.setTextSize(13);
-        howTo.setTextColor(Color.rgb(65, 75, 90));
-        add(page, howTo, 18);
-
-        TextView downloadLabel = new TextView(this);
-        downloadLabel.setText("Video link");
-        downloadLabel.setTextSize(16);
-        downloadLabel.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-        downloadLabel.setTextColor(Color.rgb(35, 55, 80));
-        add(page, downloadLabel, 16);
+        section(page,"Reel लिंक");
+        TextView instructions = new TextView(this);
+        instructions.setText("Facebook में Reel खोलें → Share → इस ऐप को चुनें। शेयर किया गया लिंक नीचे दिखाई देगा। जरूरत हो तो Paste दबाएँ।");
+        instructions.setTextSize(14);
+        instructions.setTextColor(Color.rgb(65,75,90));
+        add(page,instructions,6);
 
         urlInput = new EditText(this);
         urlInput.setMinLines(2);
         urlInput.setTextSize(14);
-        urlInput.setHint("Direct MP4 / M4V / WebM link");
-        urlInput.setPadding(dp(12), dp(10), dp(12), dp(10));
-        add(page, urlInput, 8);
+        urlInput.setHint("यहाँ Reel या direct video link आएगा");
+        add(page,urlInput,8);
+        button(page,"लिंक Paste करें",v -> pasteFromClipboard());
+        button(page,"लिंक Copy करें",v -> copyLink());
+        button(page,"लिंक Share करें",v -> shareLink());
 
-        Button paste = new Button(this);
-        paste.setText("Paste video link");
-        paste.setOnClickListener(v -> pasteFromClipboard());
-        add(page, paste, 8);
-
-        Button download = new Button(this);
-        download.setText("Download video");
-        download.setOnClickListener(v -> startDownload());
-        add(page, download, 8);
+        section(page,"वीडियो डाउनलोड");
+        TextView downloadInfo = new TextView(this);
+        downloadInfo.setText("यह संस्करण केवल ऐसे सीधे HTTPS वीडियो फ़ाइल लिंक डाउनलोड करता है जिनके अंत में .mp4, .m4v या .webm हो। Facebook Reel का पेज लिंक वीडियो फ़ाइल नहीं है, इसलिए उससे अपने-आप डाउनलोड नहीं होगा।");
+        downloadInfo.setTextSize(13);
+        downloadInfo.setTextColor(Color.rgb(65,75,90));
+        add(page,downloadInfo,6);
+        button(page,"वीडियो डाउनलोड करें",v -> startDownload());
 
         status = new TextView(this);
-        status.setText("Ready. Shared links will appear above.");
+        status.setText("तैयार है। Reel को Share करके इस ऐप में भेजें।");
         status.setTextSize(14);
-        status.setTextColor(Color.rgb(35, 75, 110));
-        add(page, status, 16);
+        status.setTextColor(Color.rgb(25,90,65));
+        add(page,status,18);
 
-        TextView note = new TextView(this);
-        note.setText("जरूरी जानकारी: यह ऐप Facebook पासवर्ड नहीं माँगता। Facebook की हर Reel डाउनलोड के लिए उपलब्ध नहीं होती। यह संस्करण केवल ऐसे HTTPS direct video-file links सेव करता है जिन्हें डाउनलोड करने की आपको अनुमति है। यह private content या Facebook की सुरक्षा को bypass नहीं करता।");
-        note.setTextSize(12);
-        note.setTextColor(Color.rgb(105, 105, 115));
-        add(page, note, 18);
+        TextView privacy = new TextView(this);
+        privacy.setText("सुरक्षा: यह ऐप Facebook पासवर्ड नहीं माँगता और न ही Facebook में लॉगिन करवाता है। Private वीडियो या प्लेटफ़ॉर्म की सुरक्षा को bypass नहीं करता। केवल वही वीडियो सेव करें जिन्हें डाउनलोड करने की अनुमति हो।");
+        privacy.setTextSize(12);
+        privacy.setTextColor(Color.rgb(105,105,115));
+        add(page,privacy,20);
+        setContentView(scroll);
+    }
 
-        setContentView(page);
+    private void section(LinearLayout p,String s) {
+        TextView t=new TextView(this); t.setText(s); t.setTextSize(17);
+        t.setTypeface(Typeface.DEFAULT,Typeface.BOLD); t.setTextColor(Color.rgb(35,55,80));
+        add(p,t,20);
+    }
+
+    private void button(LinearLayout p,String label,View.OnClickListener listener) {
+        Button b=new Button(this); b.setText(label); b.setOnClickListener(listener); add(p,b,7);
     }
 
     private void openFacebookProfile() {
-        String raw = profileInput.getText().toString().trim();
-        if (raw.isEmpty()) {
-            setStatus("Pehle Facebook profile link paste karein.");
-            return;
+        String raw=profileInput.getText().toString().trim();
+        Uri u=validHttps(raw);
+        if(u==null){setStatus("कृपया सही HTTPS Facebook प्रोफाइल लिंक डालें।");return;}
+        String h=u.getHost().toLowerCase(Locale.ROOT);
+        if(!(h.equals("facebook.com")||h.endsWith(".facebook.com"))){
+            setStatus("यह Facebook प्रोफाइल लिंक नहीं है।");return;
         }
-        Uri uri;
-        try { uri = Uri.parse(raw); } catch (Exception e) {
-            setStatus("Profile link sahi nahi hai.");
-            return;
-        }
-        String host = uri.getHost() == null ? "" : uri.getHost().toLowerCase(Locale.ROOT);
-        if (!"https".equalsIgnoreCase(uri.getScheme())
-                || !(host.equals("facebook.com") || host.endsWith(".facebook.com"))) {
-            setStatus("Sirf https://facebook.com ka profile link use karein.");
-            return;
-        }
-        try {
-            startActivity(new Intent(Intent.ACTION_VIEW, uri));
-            setStatus("Facebook profile browser/app mein khul raha hai. Reel ko Share karke is app mein bhejein.");
-        } catch (Exception e) {
-            setStatus("Facebook link open nahi ho saka.");
-        }
+        openUrl(raw);
     }
 
-    private void openFacebookReels() {
+    private void openUrl(String value) {
+        try { startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(value))); }
+        catch(Exception e){setStatus("लिंक नहीं खुल सका। इंटरनेट कनेक्शन जाँचें।");}
+    }
+
+    private Uri validHttps(String value) {
         try {
-            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.facebook.com/reel/")));
-            setStatus("Facebook Reels खुल रहा है। Reel को Share करके इस ऐप में भेजें।");
-        } catch (Exception e) {
-            setStatus("Facebook Reels नहीं खुल सका।");
-        }
+            Uri u=Uri.parse(value);
+            if("https".equalsIgnoreCase(u.getScheme()) && u.getHost()!=null) return u;
+        } catch(Exception ignored) {}
+        return null;
     }
 
     private void pasteFromClipboard() {
-        ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-        if (clipboard != null && clipboard.hasPrimaryClip()) {
-            ClipData clip = clipboard.getPrimaryClip();
-            if (clip != null && clip.getItemCount() > 0) {
-                CharSequence value = clip.getItemAt(0).coerceToText(this);
-                if (value != null) {
-                    urlInput.setText(value.toString().trim());
-                    setStatus("Link pasted. Download availability depends on the link type.");
-                    return;
-                }
+        ClipboardManager cm=(ClipboardManager)getSystemService(Context.CLIPBOARD_SERVICE);
+        if(cm!=null && cm.hasPrimaryClip()) {
+            ClipData d=cm.getPrimaryClip();
+            if(d!=null && d.getItemCount()>0) {
+                CharSequence s=d.getItemAt(0).coerceToText(this);
+                if(s!=null){urlInput.setText(s.toString().trim());setStatus("लिंक Paste हो गया।");return;}
             }
         }
-        setStatus("Clipboard is empty.");
+        setStatus("Clipboard खाली है।");
+    }
+
+    private void copyLink() {
+        String s=urlInput.getText().toString().trim();
+        if(s.isEmpty()){setStatus("पहले लिंक डालें।");return;}
+        ClipboardManager cm=(ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
+        cm.setPrimaryClip(ClipData.newPlainText("Video link",s));
+        setStatus("लिंक Copy हो गया।");
+    }
+
+    private void shareLink() {
+        String s=urlInput.getText().toString().trim();
+        if(s.isEmpty()){setStatus("पहले Reel लिंक शेयर या Paste करें।");return;}
+        Intent i=new Intent(Intent.ACTION_SEND); i.setType("text/plain");
+        i.putExtra(Intent.EXTRA_TEXT,s);
+        startActivity(Intent.createChooser(i,"लिंक शेयर करें"));
     }
 
     private void handleIncoming(Intent intent) {
-        if (intent == null || urlInput == null) return;
-        String incoming = null;
-        if (Intent.ACTION_SEND.equals(intent.getAction())) {
-            incoming = intent.getStringExtra(Intent.EXTRA_TEXT);
-        } else if (Intent.ACTION_VIEW.equals(intent.getAction()) && intent.getData() != null) {
-            incoming = intent.getData().toString();
-        }
-        if (incoming != null) {
-            String link = findHttpLink(incoming);
-            if (link != null) {
-                urlInput.setText(link);
-                setStatus("Shared link received. If Facebook only shares a page link, direct downloading may not be available.");
-            } else {
-                setStatus("Shared text mein web link nahi mila.");
-            }
+        if(intent==null || urlInput==null) return;
+        String incoming=null;
+        if(Intent.ACTION_SEND.equals(intent.getAction())) incoming=intent.getStringExtra(Intent.EXTRA_TEXT);
+        else if(Intent.ACTION_VIEW.equals(intent.getAction()) && intent.getData()!=null) incoming=intent.getData().toString();
+        if(incoming!=null) {
+            String link=findHttpLink(incoming);
+            if(link!=null){urlInput.setText(link);setStatus("Facebook से शेयर किया गया लिंक मिल गया। डाउनलोड लिंक के प्रकार पर निर्भर है।");}
+            else setStatus("शेयर किए गए टेक्स्ट में लिंक नहीं मिला।");
         }
     }
 
-    private String findHttpLink(String text) {
-        String value = text.trim();
-        int start = value.indexOf("https://");
-        if (start < 0) start = value.indexOf("http://");
-        if (start < 0) return null;
-        String link = value.substring(start).split("\\s+")[0];
-        return link.replaceAll("[),.]+$", "");
+    private String findHttpLink(String value) {
+        String s=value.trim();
+        int a=s.indexOf("https://"), b=s.indexOf("http://");
+        int start=(a<0)?b:(b<0?a:Math.min(a,b));
+        if(start<0)return null;
+        String link=s.substring(start).split("\\s+")[0];
+        while(link.endsWith(")")||link.endsWith("]")||link.endsWith(",")||link.endsWith(".")) link=link.substring(0,link.length()-1);
+        return link;
     }
 
     private void startDownload() {
-        String raw = urlInput.getText().toString().trim();
-        if (raw.isEmpty()) {
-            setStatus("Pehle video link paste ya share karein.");
-            return;
+        String raw=urlInput.getText().toString().trim();
+        Uri u=validHttps(raw);
+        if(u==null){setStatus("सही HTTPS वीडियो लिंक डालें।");return;}
+        String host=u.getHost().toLowerCase(Locale.ROOT);
+        if(host.equals("facebook.com")||host.endsWith(".facebook.com")||host.equals("fb.watch")||host.endsWith(".fb.watch")){
+            setStatus("यह Facebook Reel का पेज लिंक है, direct video file नहीं। इस ऐप में इससे वीडियो फ़ाइल नहीं निकाली जा सकती।");return;
         }
-        Uri uri;
-        try { uri = Uri.parse(raw); } catch (Exception e) {
-            setStatus("Video link valid nahi hai.");
-            return;
-        }
-        if (!"https".equalsIgnoreCase(uri.getScheme())) {
-            setStatus("Safety ke liye HTTPS link hi allowed hai.");
-            return;
-        }
-        String host = uri.getHost() == null ? "" : uri.getHost().toLowerCase(Locale.ROOT);
-        if (host.equals("facebook.com") || host.endsWith(".facebook.com")
-                || host.equals("fb.watch") || host.endsWith(".fb.watch")) {
-            setStatus("Yeh Facebook page/Reel share link hai, direct video file nahi. Is version mein Facebook link ko video file mein convert nahi kiya ja sakta.");
-            return;
-        }
-        String path = uri.getPath() == null ? "" : uri.getPath().toLowerCase(Locale.ROOT);
-        String extension;
-        if (path.endsWith(".mp4")) extension = ".mp4";
-        else if (path.endsWith(".m4v")) extension = ".m4v";
-        else if (path.endsWith(".webm")) extension = ".webm";
-        else {
-            setStatus("Is version mein direct MP4, M4V ya WebM file link hi supported hai.");
-            return;
-        }
+        String path=u.getPath()==null?"":u.getPath().toLowerCase(Locale.ROOT);
+        String ext=path.endsWith(".mp4")?".mp4":path.endsWith(".m4v")?".m4v":path.endsWith(".webm")?".webm":null;
+        if(ext==null){setStatus("सीधा .mp4, .m4v या .webm फ़ाइल लिंक ही समर्थित है।");return;}
         try {
-            DownloadManager.Request request = new DownloadManager.Request(uri);
-            request.setTitle("Video Downloader");
-            request.setDescription("Saving a permitted video");
-            request.setMimeType(extension.equals(".webm") ? "video/webm" : "video/mp4");
-            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-            request.setAllowedOverMetered(true);
-            request.setAllowedOverRoaming(false);
-            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS,
-                    "MyVideo_" + System.currentTimeMillis() + extension);
-            DownloadManager manager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
-            if (manager == null) {
-                setStatus("Android download service unavailable hai.");
-                return;
-            }
-            manager.enqueue(request);
-            setStatus("Download started. Downloads folder/notification check karein.");
-        } catch (Exception e) {
-            setStatus("Download start nahi hua. Link check karke try karein.");
-        }
+            DownloadManager.Request req=new DownloadManager.Request(u);
+            req.setTitle("Video Downloader"); req.setDescription("वीडियो सेव हो रहा है");
+            req.setMimeType(ext.equals(".webm")?"video/webm":"video/mp4");
+            req.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+            req.setAllowedOverMetered(true); req.setAllowedOverRoaming(false);
+            req.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS,"MyVideo_"+System.currentTimeMillis()+ext);
+            DownloadManager dm=(DownloadManager)getSystemService(DOWNLOAD_SERVICE);
+            if(dm==null){setStatus("Android Download सेवा उपलब्ध नहीं है।");return;}
+            dm.enqueue(req); setStatus("डाउनलोड शुरू हुआ। पूरा होने पर Downloads फ़ोल्डर देखें।");
+        } catch(Exception e){setStatus("डाउनलोड शुरू नहीं हुआ। लिंक जाँचकर दोबारा कोशिश करें।");}
     }
 
-    private void setStatus(String message) {
-        if (status != null) status.setText(message);
+    private void setStatus(String s){if(status!=null)status.setText(s);}
+    private void add(LinearLayout p,View v,int top){
+        LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);
+        lp.topMargin=dp(top);p.addView(v,lp);
     }
-
-    private void add(LinearLayout parent, View child, int top) {
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(-1, -2);
-        params.topMargin = dp(top);
-        parent.addView(child, params);
-    }
-
-    private int dp(int value) {
-        return (int) (value * getResources().getDisplayMetrics().density + 0.5f);
-    }
+    private int dp(int n){return (int)(n*getResources().getDisplayMetrics().density+0.5f);}
 }
