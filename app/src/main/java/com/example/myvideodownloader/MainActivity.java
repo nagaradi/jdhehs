@@ -52,7 +52,7 @@ public class MainActivity extends Activity {
         add(page, title, 0);
 
         TextView subtitle = new TextView(this);
-        subtitle.setText("Facebook profile खोलें • Reel share करें • Video save करें");
+        subtitle.setText("Facebook खोलें • Reel share करें • उपलब्ध वीडियो फ़ाइल सेव करें");
         subtitle.setTextSize(14);
         subtitle.setTextColor(Color.rgb(80, 90, 105));
         add(page, subtitle, 8);
@@ -76,8 +76,13 @@ public class MainActivity extends Activity {
         openProfile.setOnClickListener(v -> openFacebookProfile());
         add(page, openProfile, 8);
 
+        Button openReels = new Button(this);
+        openReels.setText("Open Facebook Reels");
+        openReels.setOnClickListener(v -> openFacebookReels());
+        add(page, openReels, 6);
+
         TextView howTo = new TextView(this);
-        howTo.setText("Facebook में Reel खोलकर Share → इस ऐप को चुनें। Reel लिंक यहाँ अपने आप आ जाएगा।");
+        howTo.setText("Facebook में Reel खोलें और Share → इस ऐप को चुनें। लिंक अपने आप यहाँ आएगा। अगर Facebook केवल Reel का पेज लिंक देता है, तो उससे सीधे वीडियो फ़ाइल डाउनलोड नहीं होगी।");
         howTo.setTextSize(13);
         howTo.setTextColor(Color.rgb(65, 75, 90));
         add(page, howTo, 18);
@@ -113,7 +118,7 @@ public class MainActivity extends Activity {
         add(page, status, 16);
 
         TextView note = new TextView(this);
-        note.setText("Note: Facebook login does not provide a downloadable file for every Reel. This version opens profiles in Facebook and accepts permitted direct video-file links only. It does not collect passwords, scrape pages, or bypass private-video restrictions.");
+        note.setText("जरूरी जानकारी: यह ऐप Facebook पासवर्ड नहीं माँगता। Facebook की हर Reel डाउनलोड के लिए उपलब्ध नहीं होती। यह संस्करण केवल ऐसे HTTPS direct video-file links सेव करता है जिन्हें डाउनलोड करने की आपको अनुमति है। यह private content या Facebook की सुरक्षा को bypass नहीं करता।");
         note.setTextSize(12);
         note.setTextColor(Color.rgb(105, 105, 115));
         add(page, note, 18);
@@ -143,6 +148,15 @@ public class MainActivity extends Activity {
             setStatus("Facebook profile browser/app mein khul raha hai. Reel ko Share karke is app mein bhejein.");
         } catch (Exception e) {
             setStatus("Facebook link open nahi ho saka.");
+        }
+    }
+
+    private void openFacebookReels() {
+        try {
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.facebook.com/reel/")));
+            setStatus("Facebook Reels खुल रहा है। Reel को Share करके इस ऐप में भेजें।");
+        } catch (Exception e) {
+            setStatus("Facebook Reels नहीं खुल सका।");
         }
     }
 
